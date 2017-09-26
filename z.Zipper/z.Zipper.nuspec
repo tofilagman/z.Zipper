@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+  <authors>tofilagman</authors>
+    <owners>tofilagman</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Compression Tool Using GZIP LZMA and LZ4 Simplified</description>
+    <releaseNotes>First Release</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>Compression Tool GZIP LZMA LZ4 Zipper Utility</tags>
+  </metadata>
+  <files>
+    <file src="bin\Debug\LZ4.dll" target="lib\net40" />
+  </files>
+</package>
