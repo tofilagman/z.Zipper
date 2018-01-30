@@ -212,7 +212,9 @@ namespace SevenZip
             }
         }
 
-        static readonly string Namespace = Assembly.GetExecutingAssembly().GetManifestResourceNames()[0].Split('.')[0];
+        static readonly string[] resourcenames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
+        static readonly string Namespace = resourcenames.Length > 0 ? resourcenames[0].Split('.')[0] : "SevenZip";
 
         private static string GetResourceString(string str)
         {
@@ -365,70 +367,70 @@ namespace SevenZip
             sp.Demand();
 #endif
             lock (_syncRoot)
-			{
-                if (_modulePtr != IntPtr.Zero)
             {
-                if (format is InArchiveFormat)
+                if (_modulePtr != IntPtr.Zero)
                 {
-                    if (_inArchives != null && _inArchives.ContainsKey(user) &&
-                        _inArchives[user].ContainsKey((InArchiveFormat) format) &&
-                        _inArchives[user][(InArchiveFormat) format] != null)
+                    if (format is InArchiveFormat)
                     {
-                        try
-                        {                            
-                            Marshal.ReleaseComObject(_inArchives[user][(InArchiveFormat) format]);
-                        }
-                        catch (InvalidComObjectException) {}
-                        _inArchives[user].Remove((InArchiveFormat) format);
-                        _totalUsers--;
-                        if (_inArchives[user].Count == 0)
+                        if (_inArchives != null && _inArchives.ContainsKey(user) &&
+                            _inArchives[user].ContainsKey((InArchiveFormat)format) &&
+                            _inArchives[user][(InArchiveFormat)format] != null)
                         {
-                            _inArchives.Remove(user);
+                            try
+                            {
+                                Marshal.ReleaseComObject(_inArchives[user][(InArchiveFormat)format]);
+                            }
+                            catch (InvalidComObjectException) { }
+                            _inArchives[user].Remove((InArchiveFormat)format);
+                            _totalUsers--;
+                            if (_inArchives[user].Count == 0)
+                            {
+                                _inArchives.Remove(user);
+                            }
                         }
                     }
-                }
 #if COMPRESS
-                if (format is OutArchiveFormat)
-                {
-                    if (_outArchives != null && _outArchives.ContainsKey(user) &&
-                        _outArchives[user].ContainsKey((OutArchiveFormat) format) &&
-                        _outArchives[user][(OutArchiveFormat) format] != null)
+                    if (format is OutArchiveFormat)
                     {
-                        try
+                        if (_outArchives != null && _outArchives.ContainsKey(user) &&
+                            _outArchives[user].ContainsKey((OutArchiveFormat)format) &&
+                            _outArchives[user][(OutArchiveFormat)format] != null)
                         {
-                            Marshal.ReleaseComObject(_outArchives[user][(OutArchiveFormat) format]);
-                        }
-                        catch (InvalidComObjectException) {}
-                        _outArchives[user].Remove((OutArchiveFormat) format);
-                        _totalUsers--;
-                        if (_outArchives[user].Count == 0)
-                        {
-                            _outArchives.Remove(user);
+                            try
+                            {
+                                Marshal.ReleaseComObject(_outArchives[user][(OutArchiveFormat)format]);
+                            }
+                            catch (InvalidComObjectException) { }
+                            _outArchives[user].Remove((OutArchiveFormat)format);
+                            _totalUsers--;
+                            if (_outArchives[user].Count == 0)
+                            {
+                                _outArchives.Remove(user);
+                            }
                         }
                     }
-                }
 #endif
-                if ((_inArchives == null || _inArchives.Count == 0)
+                    if ((_inArchives == null || _inArchives.Count == 0)
 #if COMPRESS
                     && (_outArchives == null || _outArchives.Count == 0)
 #endif
                     )
-                {
-                    _inArchives = null;
-#if COMPRESS
-                    _outArchives = null;
-#endif
-                    if (_totalUsers == 0)
                     {
+                        _inArchives = null;
+#if COMPRESS
+                        _outArchives = null;
+#endif
+                        if (_totalUsers == 0)
+                        {
 #if !WINCE && !MONO
-                        NativeMethods.FreeLibrary(_modulePtr);
+                            NativeMethods.FreeLibrary(_modulePtr);
 
 #endif
-                        _modulePtr = IntPtr.Zero;
+                            _modulePtr = IntPtr.Zero;
+                        }
                     }
                 }
             }
-			}
         }
 
         /// <summary>
@@ -485,7 +487,7 @@ namespace SevenZip
                     {
                         throw new SevenZipLibraryException("Your 7-zip library does not support this archive type.");
                     }
-                    InitUserInFormat(user, format);									
+                    InitUserInFormat(user, format);
                     _inArchives[user][format] = result as IInArchive;
                 }
                 return _inArchives[user][format];
@@ -557,7 +559,7 @@ namespace SevenZip
 #if !WINCE && !MONO
         public static void SetLibraryPath(string libraryPath)
         {
-            if (_modulePtr != IntPtr.Zero && !Path.GetFullPath(libraryPath).Equals( 
+            if (_modulePtr != IntPtr.Zero && !Path.GetFullPath(libraryPath).Equals(
                 Path.GetFullPath(_libraryFileName), StringComparison.OrdinalIgnoreCase))
             {
                 throw new SevenZipLibraryException(
