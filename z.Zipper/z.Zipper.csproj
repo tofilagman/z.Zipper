@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;UNMANAGED, COMPRESS, LZMA_STREAM, CS4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\z.Zipper.XML</DocumentationFile>
@@ -39,33 +39,144 @@
       <HintPath>..\..\LZ4.net2\bin\Debug\LZ4.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="7zip\Common\CommandLineParser.cs" />
-    <Compile Include="7zip\Common\CRC.cs" />
-    <Compile Include="7zip\Common\InBuffer.cs" />
-    <Compile Include="7zip\Common\OutBuffer.cs" />
-    <Compile Include="7zip\Compress\LZMA\LzmaBase.cs" />
-    <Compile Include="7zip\Compress\LZMA\LzmaDecoder.cs" />
-    <Compile Include="7zip\Compress\LZMA\LzmaEncoder.cs" />
-    <Compile Include="7zip\Compress\LZ\IMatchFinder.cs" />
-    <Compile Include="7zip\Compress\LZ\LzBinTree.cs" />
-    <Compile Include="7zip\Compress\LZ\LzInWindow.cs" />
-    <Compile Include="7zip\Compress\LZ\LzOutWindow.cs" />
-    <Compile Include="7zip\Compress\RangeCoder\RangeCoder.cs" />
-    <Compile Include="7zip\Compress\RangeCoder\RangeCoderBit.cs" />
-    <Compile Include="7zip\Compress\RangeCoder\RangeCoderBitTree.cs" />
-    <Compile Include="7zip\ICoder.cs" />
+    <Compile Include="ArchiveEmulationStreamProxy.cs" />
+    <Compile Include="ArchiveExtractCallback.cs" />
+    <Compile Include="ArchiveOpenCallback.cs" />
+    <Compile Include="ArchiveUpdateCallback.cs" />
+    <Compile Include="COM.cs" />
+    <Compile Include="Common.cs" />
+    <Compile Include="EventArgs.cs" />
+    <Compile Include="Exceptions.cs" />
+    <Compile Include="FileSignatureChecker.cs" />
+    <Compile Include="Formats.cs" />
+    <Compile Include="LibraryFeature.cs" />
+    <Compile Include="LibraryManager.cs" />
+    <Compile Include="LzmaDecodeStream.cs" />
+    <Compile Include="LzmaEncodeStream.cs" />
+    <Compile Include="LzmaProgressCallback.cs" />
+    <Compile Include="NativeMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="sdk\Common\CRC.cs" />
+    <Compile Include="sdk\Common\InBuffer.cs" />
+    <Compile Include="sdk\Common\OutBuffer.cs" />
+    <Compile Include="sdk\Compress\LZMA\LzmaBase.cs" />
+    <Compile Include="sdk\Compress\LZMA\LzmaDecoder.cs" />
+    <Compile Include="sdk\Compress\LZMA\LzmaEncoder.cs" />
+    <Compile Include="sdk\Compress\LZ\IMatchFinder.cs" />
+    <Compile Include="sdk\Compress\LZ\LzBinTree.cs" />
+    <Compile Include="sdk\Compress\LZ\LzInWindow.cs" />
+    <Compile Include="sdk\Compress\LZ\LzOutWindow.cs" />
+    <Compile Include="sdk\Compress\RangeCoder\RangeCoder.cs" />
+    <Compile Include="sdk\Compress\RangeCoder\RangeCoderBit.cs" />
+    <Compile Include="sdk\Compress\RangeCoder\RangeCoderBitTree.cs" />
+    <Compile Include="sdk\ICoder.cs" />
+    <Compile Include="SevenZipCompressor.cs" />
+    <Compile Include="SevenZipCompressorAsynchronous.cs" />
+    <Compile Include="SevenZipExtractor.cs" />
+    <Compile Include="SevenZipExtractorAsynchronous.cs" />
+    <Compile Include="SevenZipSfx.cs" />
+    <Compile Include="StreamWrappers.cs" />
     <Compile Include="Zip.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="arch\Test.bzip2.7z" />
+    <None Include="arch\Test.lzma.7z" />
+    <None Include="arch\Test.lzma2.7z" />
+    <None Include="arch\Test.ppmd.7z" />
+    <None Include="arch\Test.rar" />
+    <None Include="arch\Test.tar" />
+    <None Include="arch\Test.txt.bz2" />
+    <None Include="arch\Test.txt.gz" />
+    <None Include="arch\Test.txt.xz" />
+    <None Include="arch\Test.zip" />
+    <None Include="bin\Debug\SevenZipSharp.dll.lastcodeanalysissucceeded" />
+    <None Include="obj\Debug\DesignTimeResolveAssemblyReferences.cache" />
+    <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <None Include="obj\Debug\SevenZip2010.csproj.CoreCompileInputs.cache" />
+    <None Include="obj\Debug\z.Zipper.csproj.CopyComplete" />
+    <None Include="obj\Debug\z.Zipper.csproj.CoreCompileInputs.cache" />
+    <None Include="obj\Debug\z.Zipper.csprojResolveAssemblyReference.cache" />
+    <None Include="sfx\7z.sfx" />
+    <None Include="sfx\7zCon.sfx" />
+    <None Include="sfx\7zS.sfx" />
+    <None Include="sfx\7zSD.sfx" />
+    <None Include="sfx\7zxSD_All.sfx" />
+    <None Include="sfx\7zxSD_All_x64.sfx" />
+    <None Include="sfx\7zxSD_Deflate.sfx" />
+    <None Include="sfx\7zxSD_Deflate_x64.sfx" />
+    <None Include="sfx\7zxSD_LZMA.sfx" />
+    <None Include="sfx\7zxSD_LZMA2.sfx" />
+    <None Include="sfx\7zxSD_LZMA2_x64.sfx" />
+    <None Include="sfx\7zxSD_LZMA_x64.sfx" />
+    <None Include="sfx\7zxSD_PPMd.sfx" />
+    <None Include="sfx\7zxSD_PPMd_x64.sfx" />
+    <None Include="sfx\Configs.xsd">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="7z.dll" />
+    <Content Include="7z64.dll" />
+    <Content Include="arch\Test.txt" />
+    <Content Include="bin\Debug\7z.dll" />
+    <Content Include="bin\Debug\7z64.dll" />
+    <Content Include="bin\Debug\LZ4.dll" />
+    <Content Include="bin\Debug\SevenZipSharp.dll" />
+    <Content Include="bin\Debug\SevenZipSharp.dll.CodeAnalysisLog.xml" />
+    <Content Include="bin\Debug\SevenZipSharp.pdb" />
+    <Content Include="bin\Debug\SevenZipSharp.xml" />
+    <Content Include="bin\Debug\z.Zipper.dll" />
+    <Content Include="bin\Debug\z.Zipper.pdb" />
+    <Content Include="bin\Debug\z.Zipper.XML" />
+    <Content Include="gpl.txt" />
+    <Content Include="lgpl.txt" />
+    <Content Include="obj\Debug\SevenZip2010.csproj.FileListAbsolute.txt" />
+    <Content Include="obj\Debug\SevenZipSharp.dll" />
+    <Content Include="obj\Debug\SevenZipSharp.pdb" />
+    <Content Include="obj\Debug\z.Zipper.csproj.FileListAbsolute.txt" />
+    <Content Include="obj\Debug\z.Zipper.dll" />
+    <Content Include="obj\Debug\z.Zipper.pdb" />
+    <Content Include="sfx\Configs.xml" />
+    <Content Include="sfx\Configs.xslt" />
+    <Content Include="sfx\sample.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bin\Deploy\" />
+    <Folder Include="bin\Release\" />
+    <Folder Include="obj\Debug\TempPE\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>@echo off
+set RegQry=HKLM\Hardware\Description\System\CentralProcessor\0
+reg.exe Query %25RegQry%25 &gt; checkOS.txt
+find /i "x86" &lt; checkOS.txt &gt;nul
+
+if %25ERRORLEVEL%25 == 0 ( goto 32bit ) else ( goto 64bit )
+
+:32bit
+echo Copying the 32-bit 7-Zip DLL...
+copy /B /Y $(ProjectDir)7z.dll $(TargetDir)7z.dll
+goto exit
+
+:64bit
+echo Copying the 64-bit 7-Zip DLL...
+copy /B /Y $(ProjectDir)7z64.dll $(TargetDir)7z.dll
+goto exit
+
+:exit
+del /Q checkOS.txt</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

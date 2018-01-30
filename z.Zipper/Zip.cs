@@ -4,6 +4,7 @@ using System.IO;
 using LZ4;
 using SevenZip;
 using System.IO.Compression;
+using System.Reflection;
 
 namespace z.Zipper
 {
@@ -12,7 +13,7 @@ namespace z.Zipper
     /// Implements LZ4 Compressor
     /// </summary>
     public static class Zip
-    { 
+    {
         /// <summary>
         /// Message Handler
         /// </summary>
@@ -47,11 +48,11 @@ namespace z.Zipper
         /// <param name="zipStream"></param>
         public static void WriteBytes(string fpath, Stream zipStream)
         {
-            using(var fs = new FileStream(fpath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var fs = new FileStream(fpath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 byte[] buffer = new byte[1024];
                 int bytesread = 0;
-                while((bytesread = fs.Read(buffer, 0 , buffer.Length)) > 0)
+                while ((bytesread = fs.Read(buffer, 0, buffer.Length)) > 0)
                 {
                     zipStream.Write(BitConverter.GetBytes(bytesread), 0, sizeof(int));
                     zipStream.Write(buffer, 0, bytesread);
@@ -106,7 +107,8 @@ namespace z.Zipper
                     outFile.Write(bytes, 0, iFileLen);
 
                 return true;
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -150,7 +152,7 @@ namespace z.Zipper
             using (FileStream outFile = new FileStream(sOutFile, FileMode.Append, FileAccess.Write, FileShare.None))
             using (LZ4Stream str = new LZ4Stream(outFile, LZ4StreamMode.Compress, false))
             {
-                 
+
                 foreach (string sFilePath in sFiles)
                 {
                     progress?.Invoke(sFilePath);
@@ -171,7 +173,7 @@ namespace z.Zipper
             int iDirLen = sInDir[sInDir.Length - 1] == Path.DirectorySeparatorChar ? sInDir.Length : sInDir.Length + 1;
 
             using (FileStream outFile = new FileStream(sOutFile, FileMode.Create, FileAccess.Write, FileShare.None))
-            using (GZipStream str = new GZipStream(outFile, CompressionMode.Compress, false))
+            using (GZipStream str = new GZipStream(outFile, System.IO.Compression.CompressionMode.Compress, false))
                 foreach (string sFilePath in sFiles)
                 {
                     string sRelativePath = sFilePath.Substring(iDirLen);
@@ -191,7 +193,7 @@ namespace z.Zipper
         public static void CompressDirGZip(string RootDir, string[] sFiles, string sOutFile, ProgressDelegate progress = null)
         {
             using (FileStream outFile = new FileStream(sOutFile, FileMode.Append, FileAccess.Write, FileShare.None))
-            using (GZipStream str = new GZipStream(outFile, CompressionMode.Compress, false))
+            using (GZipStream str = new GZipStream(outFile, System.IO.Compression.CompressionMode.Compress, false))
                 foreach (string sFilePath in sFiles)
                 {
                     progress?.Invoke(sFilePath);
@@ -221,104 +223,34 @@ namespace z.Zipper
         public static void DecompressToDirGZip(string sCompressedFile, string sDir, ProgressDelegate progress = null)
         {
             using (FileStream inFile = new FileStream(sCompressedFile, FileMode.Open, FileAccess.Read, FileShare.None))
-            using (GZipStream zipStream = new GZipStream(inFile, CompressionMode.Decompress, true))
+            using (GZipStream zipStream = new GZipStream(inFile, System.IO.Compression.CompressionMode.Decompress, true))
                 while (DecompressFile(sDir, zipStream, progress)) ;
         }
 
-        /// <summary>
-        /// Compress using LZMA
-        /// </summary>
-        /// <param name="inFile"></param>
-        /// <param name="outFile"></param>
-        public static void CompressFileLZMA(string inFile, string outFile)
-        {
-            Int32 dictionary = 1 << 23;
-            Int32 posStateBits = 2;
-            Int32 litContextBits = 3; // for normal files
-            // UInt32 litContextBits = 0; // for 32-bit data
-            Int32 litPosBits = 0;
-            // UInt32 litPosBits = 2; // for 32-bit data
-            Int32 algorithm = 2;
-            Int32 numFastBytes = 128;
+        //Seven Zip 
+        /*
+         *   Extract 
+         *    var extractor = new SevenZipExtractor(sCompressFile);
+         *   extractor.Extracting += new EventHandler<ProgressEventArgs>(extr_Extracting);
+         *   extractor.FileExtractionStarted += new EventHandler<FileInfoEventArgs>(extr_FileExtractionStarted);
+         *   extractor.FileExists += new EventHandler<FileOverwriteEventArgs>(extr_FileExists);
+         *   extractor.ExtractionFinished += new EventHandler<EventArgs>(extr_ExtractionFinished);
+         *   extractor.BeginExtractArchive(sDir);
+         */
 
-            string mf = "bt4";
-            bool eos = true;
-            bool stdInMode = false;
+        /*
+         * Compress  
+         *  SevenZipCompressor cmp = new SevenZipCompressor();
+         * cmp.Compressing += new EventHandler<ProgressEventArgs>(cmp_Compressing);
+         * cmp.FileCompressionStarted += new EventHandler<FileNameEventArgs>(cmp_FileCompressionStarted);
+         * cmp.CompressionFinished += new EventHandler<EventArgs>(cmp_CompressionFinished);
+         * cmp.ArchiveFormat = (OutArchiveFormat)Enum.Parse(typeof(OutArchiveFormat), cb_Format.Text);
+         * cmp.CompressionLevel = (CompressionLevel)slider_Level.Value;
+         * string directory = tb_CompressFolder.Text;
+         * string archFileName = tb_CompressArchive.Text;
+         * cmp.BeginCompressDirectory(directory, archFileName);  
+         */
 
 
-            CoderPropID[] propIDs =  {
-                CoderPropID.DictionarySize,
-                CoderPropID.PosStateBits,
-                CoderPropID.LitContextBits,
-                CoderPropID.LitPosBits,
-                CoderPropID.Algorithm,
-                CoderPropID.NumFastBytes,
-                CoderPropID.MatchFinder,
-                CoderPropID.EndMarker
-            };
-
-            object[] properties = {
-                (Int32)(dictionary),
-                (Int32)(posStateBits),
-                (Int32)(litContextBits),
-                (Int32)(litPosBits),
-                (Int32)(algorithm),
-                (Int32)(numFastBytes),
-                mf,
-                eos
-            };
-
-            using (FileStream inStream = new FileStream(inFile, FileMode.Open))
-            {
-                using (FileStream outStream = new FileStream(outFile, FileMode.Create))
-                {
-                    SevenZip.Compression.LZMA.Encoder encoder = new SevenZip.Compression.LZMA.Encoder();
-                    encoder.SetCoderProperties(propIDs, properties);
-                    encoder.WriteCoderProperties(outStream);
-                    Int64 fileSize;
-                    if (eos || stdInMode)
-                        fileSize = -1;
-                    else
-                        fileSize = inStream.Length;
-                    for (int i = 0; i < 8; i++)
-                        outStream.WriteByte((Byte)(fileSize >> (8 * i)));
-                    encoder.Code(inStream, outStream, -1, -1, null);
-                }
-            }
-
-        }
-
-        /// <summary>
-        /// Decompress Using LZMA
-        /// </summary>
-        /// <param name="inFile"></param>
-        /// <param name="outFile"></param>
-        public static void DecompressFileLZMA(string inFile, string outFile)
-        {
-            using (FileStream input = new FileStream(inFile, FileMode.Open))
-            {
-                using (FileStream output = new FileStream(outFile, FileMode.Create))
-                {
-                    SevenZip.Compression.LZMA.Decoder decoder = new SevenZip.Compression.LZMA.Decoder();
-
-                    byte[] properties = new byte[5];
-                    if (input.Read(properties, 0, 5) != 5)
-                        throw (new Exception("input .lzma is too short"));
-                    decoder.SetDecoderProperties(properties);
-
-                    long outSize = 0;
-                    for (int i = 0; i < 8; i++)
-                    {
-                        int v = input.ReadByte();
-                        if (v < 0)
-                            throw (new Exception("Can't Read 1"));
-                        outSize |= ((long)(byte)v) << (8 * i);
-                    }
-                    long compressedSize = input.Length - input.Position;
-
-                    decoder.Code(input, output, compressedSize, outSize, null);
-                }
-            }
-        }
     }
 }
